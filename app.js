@@ -157,8 +157,8 @@ const DOM = {
 };
 
 // --- Initialization ---
-function init() {
-    loadState();
+async function init() {
+    await loadState();
     updateDateDisplay();
     DOM.filterBtns.forEach(b => {
         b.classList.toggle('active', b.dataset.filter === (state.taskViewFilter || 'all'));
@@ -1113,29 +1113,29 @@ function updateSmartListCounts() {
 // ===== FIREBASE AUTHENTICATION LOGIC =====
 let appInitialized = false;
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         // User is signed in
         document.getElementById('auth-modal-overlay').classList.add('hidden');
         document.getElementById('user-name-display').textContent = user.email.split('@')[0];
+
         if (!appInitialized) {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
+            init();
             appInitialized = true;
+        } else {
+            // App was already running (maybe logged out and logged back in)
+            await loadState();
         }
     } else {
         // User is signed out
         document.getElementById('auth-modal-overlay').classList.remove('hidden');
         if (!appInitialized) {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
+            init();
             appInitialized = true;
+        } else {
+            // Clear tasks on logout
+            state.tasks = [];
+            renderTasks();
         }
     }
 });
