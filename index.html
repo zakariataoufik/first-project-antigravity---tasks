@@ -63,11 +63,14 @@
             <div class="sidebar-footer">
                 <div class="user-profile">
                     <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=transparent"
-                        alt="User Avatar" class="avatar">
+                        alt="User Avatar" class="avatar" id="user-avatar">
                     <div class="user-info">
-                        <span class="user-name">Welcome</span>
+                        <span class="user-name" id="user-name-display">Welcome</span>
                         <span class="user-status">Ready to focus?</span>
                     </div>
+                    <button id="logout-btn" class="logout-btn" title="Sign Out">
+                        <i class="ph ph-sign-out"></i>
+                    </button>
                 </div>
             </div>
         </aside>
@@ -435,9 +438,44 @@
         </div>
     </div>
 
+    <!-- Auth Modal Overlay -->
+    <div id="auth-modal-overlay" class="auth-overlay">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="glass-card auth-card">
+            <div class="auth-header">
+                <i class="ph-fill ph-infinity brand-icon"></i>
+                <h2 id="auth-title">Welcome to Aether</h2>
+                <p id="auth-subtitle">Sign in to sync your tasks</p>
+            </div>
+
+            <form id="auth-form" class="auth-form">
+                <div class="glass-input-group auth-input-group">
+                    <i class="ph ph-envelope"></i>
+                    <input type="email" id="auth-email" class="glass-input auth-input" placeholder="Email Address"
+                        required>
+                </div>
+                <div class="glass-input-group auth-input-group">
+                    <i class="ph ph-lock"></i>
+                    <input type="password" id="auth-password" class="glass-input auth-input" placeholder="Password"
+                        required>
+                </div>
+
+                <p id="auth-error-msg" class="auth-error hidden"></p>
+
+                <button type="submit" id="auth-submit-btn" class="primary-btn auth-submit">Sign In</button>
+            </form>
+
+            <div class="auth-footer">
+                <span id="auth-toggle-text">Don't have an account?</span>
+                <button type="button" id="auth-toggle-btn" class="text-btn">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
-    <script src="app.js"></script>
+    <script src="app.js" type="module"></script>
 </body>
 
 </html>

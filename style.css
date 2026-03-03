@@ -1916,3 +1916,139 @@ body {
 .toast-close:hover {
     color: var(--text-primary);
 }
+
+/* ===== AUTH MODAL ===== */
+.auth-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg-color);
+    /* solid background to hide app fully */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease;
+}
+
+.auth-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    animation: slideIn 0.5s ease-out;
+}
+
+.auth-header {
+    text-align: center;
+}
+
+.auth-header .brand-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.auth-header h2 {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
+
+.auth-header p {
+    color: var(--text-secondary);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auth-input-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    padding: 12px 16px;
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+}
+
+.auth-input-group:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 15px rgba(121, 40, 202, 0.3);
+}
+
+.auth-input-group i {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+}
+
+.auth-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+    font-family: inherit;
+}
+
+.auth-submit {
+    margin-top: 10px;
+    padding: 14px;
+    font-size: 1.1rem;
+}
+
+.auth-footer {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.text-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent-tertiary);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-left: 5px;
+}
+
+.text-btn:hover {
+    text-decoration: underline;
+}
+
+.auth-error {
+    color: var(--danger);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.auth-error.hidden {
+    display: none;
+}
+
+.logout-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    margin-left: auto;
+    font-size: 1.2rem;
+    transition: var(--transition);
+}
+
+.logout-btn:hover {
+    color: var(--danger);
+}

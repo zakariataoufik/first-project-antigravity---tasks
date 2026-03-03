@@ -1,3 +1,18 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyD-2o5Jz0I0-aUxx_IxOeqmsgYHi9Mpxbk",
+    authDomain: "first-project---tasks.firebaseapp.com",
+    projectId: "first-project---tasks",
+    storageBucket: "first-project---tasks.firebasestorage.app",
+    messagingSenderId: "995559938504",
+    appId: "1:995559938504:web:ae8ae3ea35ce54edbc88fd"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+
 // --- State Management ---
 // Default state
 let state = {
@@ -1053,12 +1068,69 @@ function updateSmartListCounts() {
     DOM.badgePlanned.textContent = countPlanned;
 }
 
-// Boot
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
+// ===== FIREBASE AUTHENTICATION LOGIC =====
+let appInitialized = false;
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // User is signed in
+        document.getElementById('auth-modal-overlay').classList.add('hidden');
+        document.getElementById('user-name-display').textContent = user.email.split('@')[0];
+        if (!appInitialized) {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+            appInitialized = true;
+        }
+    } else {
+        // User is signed out
+        document.getElementById('auth-modal-overlay').classList.remove('hidden');
+        if (!appInitialized) {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+            appInitialized = true;
+        }
+    }
+});
+
+document.getElementById('auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    const errorMsg = document.getElementById('auth-error-msg');
+    const isSignUp = document.getElementById('auth-toggle-btn').textContent === 'Sign In';
+
+    try {
+        errorMsg.classList.add('hidden');
+        if (isSignUp) {
+            await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+            await signInWithEmailAndPassword(auth, email, password);
+        }
+    } catch (error) {
+        errorMsg.textContent = error.message;
+        errorMsg.classList.remove('hidden');
+    }
+});
+
+document.getElementById('auth-toggle-btn').addEventListener('click', (e) => {
+    const isSignUp = e.target.textContent === 'Sign Up';
+    document.getElementById('auth-title').textContent = isSignUp ? 'Create Account' : 'Welcome to Aether';
+    document.getElementById('auth-subtitle').textContent = isSignUp ? 'Join to sync your tasks' : 'Sign in to sync your tasks';
+    document.getElementById('auth-submit-btn').textContent = isSignUp ? 'Sign Up' : 'Sign In';
+    document.getElementById('auth-toggle-text').textContent = isSignUp ? 'Already have an account?' : "Don't have an account?";
+    e.target.textContent = isSignUp ? 'Sign In' : 'Sign Up';
+    document.getElementById('auth-error-msg').classList.add('hidden');
+});
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+    signOut(auth);
+});
 
 // ===== FOCUS MODE =====
 
@@ -1165,3 +1237,11 @@ window.syncFocusSubtasks = syncFocusSubtasks;
 DOM.exitFocusBtn.addEventListener('click', exitFocusMode);
 DOM.focusTimerToggle.addEventListener('click', toggleTimer);
 DOM.focusTimerReset.addEventListener('click', resetTimer);
+
+// Expose functions to global scope for inline HTML handlers
+window.toggleTask = toggleTask;
+window.deleteTask = deleteTask;
+window.setActiveTaskAndStart = setActiveTaskAndStart;
+window.openTaskDetail = openTaskDetail;
+window.toggleSubtask = toggleSubtask;
+window.deleteSubtask = deleteSubtask;
