@@ -299,31 +299,35 @@ function addTask(text, deadline, notes, duration, priority) {
 }
 
 function toggleTask(id) {
-    state.tasks = state.tasks.map(task => {
-        if (task.id === id) {
-            const completed = !task.completed;
-            return {
-                ...task,
-                completed,
-                completedAt: completed ? new Date().toISOString() : null
-            };
-        }
-        return task;
+    requireAuth(() => {
+        state.tasks = state.tasks.map(task => {
+            if (task.id === id) {
+                const completed = !task.completed;
+                return {
+                    ...task,
+                    completed,
+                    completedAt: completed ? new Date().toISOString() : null
+                };
+            }
+            return task;
+        });
+        saveState();
+        renderTasks();
+        updateProgress();
+        updateTimeBudget();
+        updateSmartListCounts();
     });
-    saveState();
-    renderTasks();
-    updateProgress();
-    updateTimeBudget();
-    updateSmartListCounts();
 }
 
 function deleteTask(id) {
-    state.tasks = state.tasks.filter(task => task.id !== id);
-    saveState();
-    renderTasks();
-    updateProgress();
-    updateTimeBudget();
-    updateSmartListCounts();
+    requireAuth(() => {
+        state.tasks = state.tasks.filter(task => task.id !== id);
+        saveState();
+        renderTasks();
+        updateProgress();
+        updateTimeBudget();
+        updateSmartListCounts();
+    });
 }
 
 function renderTasks() {
@@ -658,28 +662,30 @@ function populateSettingsForm() {
 }
 
 function saveSettings() {
-    state.timerSettings.focus = parseInt(DOM.setFocus.value) * 60;
-    state.timerSettings.shortBreak = parseInt(DOM.setShortBreak.value) * 60;
-    state.timerSettings.longBreak = parseInt(DOM.setLongBreak.value) * 60;
-    state.goal.dailyTasks = parseInt(DOM.setDailyGoal.value);
+    requireAuth(() => {
+        state.timerSettings.focus = parseInt(DOM.setFocus.value) * 60;
+        state.timerSettings.shortBreak = parseInt(DOM.setShortBreak.value) * 60;
+        state.timerSettings.longBreak = parseInt(DOM.setLongBreak.value) * 60;
+        state.goal.dailyTasks = parseInt(DOM.setDailyGoal.value);
 
-    // Update timer shortcut buttons
-    DOM.timerModeBtns[0].dataset.time = state.timerSettings.focus / 60;
-    DOM.timerModeBtns[1].dataset.time = state.timerSettings.shortBreak / 60;
-    DOM.timerModeBtns[2].dataset.time = state.timerSettings.longBreak / 60;
+        // Update timer shortcut buttons
+        DOM.timerModeBtns[0].dataset.time = state.timerSettings.focus / 60;
+        DOM.timerModeBtns[1].dataset.time = state.timerSettings.shortBreak / 60;
+        DOM.timerModeBtns[2].dataset.time = state.timerSettings.longBreak / 60;
 
-    saveState();
-    updateProgress();
+        saveState();
+        updateProgress();
 
-    DOM.settingsMsg.classList.remove('hidden');
-    setTimeout(() => {
-        DOM.settingsMsg.classList.add('hidden');
-    }, 3000);
+        DOM.settingsMsg.classList.remove('hidden');
+        setTimeout(() => {
+            DOM.settingsMsg.classList.add('hidden');
+        }, 3000);
 
-    // If timer stopped, refresh the mode
-    if (!state.timerState.isRunning && !state.activeTaskId) {
-        setTimerMode(state.timerSettings.focus / 60);
-    }
+        // If timer stopped, refresh the mode
+        if (!state.timerState.isRunning && !state.activeTaskId) {
+            setTimerMode(state.timerSettings.focus / 60);
+        }
+    });
 }
 
 // --- Audio ---
@@ -728,20 +734,22 @@ function setupEventListeners() {
     });
 
     const handleAddTask = () => {
-        addTask(
-            DOM.taskInput.value,
-            DOM.taskDeadline.value,
-            DOM.taskNotes.value,
-            DOM.taskDuration.value,
-            DOM.taskPriority.value
-        );
-        DOM.taskInput.value = '';
-        DOM.taskDeadline.value = '';
-        DOM.taskNotes.value = '';
-        DOM.taskDuration.value = '';
-        DOM.taskPriority.value = 'medium';
-        DOM.taskDetailsInput.classList.add('hidden');
-        DOM.toggleDetailsBtn.innerHTML = '<i class="ph ph-caret-down"></i>';
+        requireAuth(() => {
+            addTask(
+                DOM.taskInput.value,
+                DOM.taskDeadline.value,
+                DOM.taskNotes.value,
+                DOM.taskDuration.value,
+                DOM.taskPriority.value
+            );
+            DOM.taskInput.value = '';
+            DOM.taskDeadline.value = '';
+            DOM.taskNotes.value = '';
+            DOM.taskDuration.value = '';
+            DOM.taskPriority.value = 'medium';
+            DOM.taskDetailsInput.classList.add('hidden');
+            DOM.toggleDetailsBtn.innerHTML = '<i class="ph ph-caret-down"></i>';
+        });
     };
 
     DOM.addTaskBtn.addEventListener('click', handleAddTask);
@@ -1118,6 +1126,7 @@ onAuthStateChanged(auth, async (user) => {
         // User is signed in
         document.getElementById('auth-modal-overlay').classList.add('hidden');
         document.getElementById('user-name-display').textContent = user.email.split('@')[0];
+        document.getElementById('logout-btn').classList.remove('hidden');
 
         if (!appInitialized) {
             init();
@@ -1127,8 +1136,11 @@ onAuthStateChanged(auth, async (user) => {
             await loadState();
         }
     } else {
-        // User is signed out
-        document.getElementById('auth-modal-overlay').classList.remove('hidden');
+        // User is signed out (Guest Mode)
+        document.getElementById('auth-modal-overlay').classList.add('hidden');
+        document.getElementById('user-name-display').textContent = "Guest";
+        document.getElementById('logout-btn').classList.add('hidden');
+
         if (!appInitialized) {
             init();
             appInitialized = true;
@@ -1136,7 +1148,25 @@ onAuthStateChanged(auth, async (user) => {
             // Clear tasks on logout
             state.tasks = [];
             renderTasks();
+            updateProgress();
+            updateTimeBudget();
+            updateSmartListCounts();
         }
+    }
+});
+
+function requireAuth(actionFunction) {
+    if (auth.currentUser) {
+        return actionFunction();
+    } else {
+        document.getElementById('auth-modal-overlay').classList.remove('hidden');
+    }
+}
+
+// Close modal if user clicks outside the modal card
+document.getElementById('auth-modal-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('auth-modal-overlay')) {
+        document.getElementById('auth-modal-overlay').classList.add('hidden');
     }
 });
 
