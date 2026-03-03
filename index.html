@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether | Glass Task Manager</title>
+    <!-- Beautiful modern font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons for elegant minimalist icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="A stunning, glassmorphism-inspired task manager with a built-in focus timer.">
+</head>
+
+<body>
+    <!-- Background glowing orbs for the glassmorphism effect -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="app-layout">
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-panel">
+            <div class="brand">
+                <i class="ph-fill ph-infinity brand-icon"></i>
+                <h1>Aether</h1>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <i class="ph ph-squares-four"></i> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-view="tasks">
+                    <i class="ph ph-list-checks"></i> Tasks
+                </a>
+
+                <a href="#" class="nav-item" data-view="settings">
+                    <i class="ph ph-gear"></i> Settings
+                </a>
+            </nav>
+            <div class="smart-list-section">
+                <p class="smart-list-label">Smart Lists</p>
+                <a href="#" class="nav-item smart-item" data-view="filter-today">
+                    <i class="ph ph-calendar-check"></i> Today
+                    <span class="smart-badge" id="badge-today">0</span>
+                </a>
+                <a href="#" class="nav-item smart-item" data-view="filter-tomorrow">
+                    <i class="ph ph-calendar-plus"></i> Tomorrow
+                    <span class="smart-badge" id="badge-tomorrow">0</span>
+                </a>
+                <a href="#" class="nav-item smart-item" data-view="filter-week">
+                    <i class="ph ph-calendar-dots"></i> This Week
+                    <span class="smart-badge" id="badge-week">0</span>
+                </a>
+                <a href="#" class="nav-item smart-item" data-view="filter-planned">
+                    <i class="ph ph-calendar"></i> Planned
+                    <span class="smart-badge" id="badge-planned">0</span>
+                </a>
+            </div>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=transparent"
+                        alt="User Avatar" class="avatar">
+                    <div class="user-info">
+                        <span class="user-name">Welcome</span>
+                        <span class="user-status">Ready to focus?</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h2 class="page-title">Hey, User 👋</h2>
+                    <p class="date-display" id="current-date">Loading date...</p>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn glass-btn" aria-label="Notifications">
+                        <i class="ph ph-bell"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Goal Progress Dashboard -->
+            <section id="view-dashboard-cards" class="dashboard-cards view-section">
+                <div class="glass-card progress-card">
+                    <div class="card-header">
+                        <h3>Daily Goal</h3>
+                        <span class="progress-text" id="progress-text">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <p class="progress-subtext" id="progress-subtext">0 of 0 tasks completed</p>
+                </div>
+                <div class="glass-card stats-mini-card">
+                    <div class="stat-icon-wrapper">
+                        <i class="ph ph-fire"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-label">Focus Sessions</span>
+                        <span class="stat-value" id="stat-sessions">0</span>
+                    </div>
+                </div>
+                <div class="glass-card stats-mini-card time-budget-card">
+                    <div class="stat-icon-wrapper">
+                        <i class="ph ph-clock-countdown"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-label">Time Budget</span>
+                        <span class="stat-value" id="time-budget-display">0m left</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Task Management Section -->
+            <section id="view-task-section" class="task-section view-section">
+                <div class="task-header">
+                    <h3>Your Tasks</h3>
+                    <div class="task-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="active">Active</button>
+                        <button class="filter-btn" data-filter="completed">Done</button>
+                    </div>
+                </div>
+
+                <div class="task-input-container">
+                    <div class="glass-input-group main-input-row">
+                        <i class="ph ph-plus input-icon"></i>
+                        <input type="text" id="task-input" placeholder="What needs to be done? Press Enter to add."
+                            autocomplete="off">
+                        <div class="quick-add-icons">
+                            <button class="icon-btn quick-icon" id="quick-date-btn" title="Set date"
+                                aria-label="Set date">
+                                <i class="ph ph-calendar-blank"></i>
+                            </button>
+                            <button class="icon-btn quick-icon" id="quick-priority-btn" title="Set priority"
+                                aria-label="Cycle priority">
+                                <i class="ph ph-flag" id="quick-priority-icon"></i>
+                            </button>
+                            <button class="icon-btn quick-icon" id="quick-duration-btn" title="Set duration"
+                                aria-label="Set duration">
+                                <i class="ph ph-hourglass-high"></i>
+                            </button>
+                        </div>
+                        <button id="toggle-details-btn" class="icon-btn outline-btn btn-small" aria-label="All details"
+                            title="All details">
+                            <i class="ph ph-caret-down"></i>
+                        </button>
+                        <button id="add-task-btn" class="primary-btn">Add</button>
+                    </div>
+
+                    <div class="glass-input-details hidden" id="task-details-input">
+                        <div class="modern-detail-chips">
+                            <div class="detail-chip">
+                                <i class="ph ph-calendar-blank"></i>
+                                <input type="date" id="task-deadline" aria-label="Task deadline" class="chip-input">
+                            </div>
+                            <div class="detail-chip">
+                                <i class="ph ph-hourglass-high"></i>
+                                <input type="number" id="task-duration" placeholder="Duration (m)" min="1"
+                                    aria-label="Task duration" class="chip-input">
+                            </div>
+                            <div class="detail-chip">
+                                <i class="ph ph-flag"></i>
+                                <select id="task-priority" class="chip-input" aria-label="Task priority">
+                                    <option value="medium">Medium Priority</option>
+                                    <option value="high">High Priority</option>
+                                    <option value="low">Low Priority</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modern-notes-input">
+                            <i class="ph ph-text-align-left"></i>
+                            <input type="text" id="task-notes" placeholder="Add extra notes or thoughts (optional)...">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="frog-slot" class="frog-slot-container">
+                    <!-- Eat the Frog task will appear here -->
+                </div>
+
+                <ul class="task-list" id="task-list">
+                    <!-- Tasks will be injected here via JS -->
+                </ul>
+            </section>
+
+
+            <!-- Settings View -->
+            <section id="view-settings" class="view-section hidden">
+                <div class="glass-card full-card settings-card">
+                    <h3>Application Settings</h3>
+
+                    <div class="settings-group">
+                        <h4>Timer Durations (minutes)</h4>
+                        <div class="setting-item">
+                            <label>Focus Session</label>
+                            <input type="number" id="set-focus" min="1" max="60" value="25" class="glass-input">
+                        </div>
+                        <div class="setting-item">
+                            <label>Short Break</label>
+                            <input type="number" id="set-short-break" min="1" max="30" value="5" class="glass-input">
+                        </div>
+                        <div class="setting-item">
+                            <label>Long Break</label>
+                            <input type="number" id="set-long-break" min="1" max="60" value="15" class="glass-input">
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>Goals</h4>
+                        <div class="setting-item">
+                            <label>Daily Tasks Goal</label>
+                            <input type="number" id="set-daily-goal" min="1" max="50" value="5" class="glass-input">
+                        </div>
+                    </div>
+
+                    <button id="save-settings-btn" class="primary-btn">Save Settings</button>
+                    <p id="settings-msg" class="success-msg hidden">Settings saved successfully!</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Right Panel (Timer & Extra Stats) -->
+        <aside class="right-panel">
+            <div class="glass-card timer-card">
+                <div class="timer-header">
+                    <h3>Focus Flow</h3>
+                    <i class="ph ph-timer"></i>
+                </div>
+
+                <div class="active-task-display hidden" id="active-task-display">
+                    <span class="active-label">Focusing on:</span>
+                    <span class="active-task-name" id="active-task-name">Task Name</span>
+                    <button id="clear-active-task" class="clear-btn" aria-label="Clear active task"><i
+                            class="ph ph-x"></i></button>
+                </div>
+
+                <div class="timer-modes">
+                    <button class="timer-mode-btn active" data-time="25">Focus</button>
+                    <button class="timer-mode-btn" data-time="5">Short Break</button>
+                    <button class="timer-mode-btn" data-time="15">Long Break</button>
+                </div>
+
+                <div class="timer-circle">
+                    <svg class="timer-svg" viewBox="0 0 100 100">
+                        <circle class="timer-track" cx="50" cy="50" r="45"></circle>
+                        <circle class="timer-progress" id="timer-progress-svg" cx="50" cy="50" r="45"></circle>
+                    </svg>
+                    <div class="timer-display" id="timer-display">25:00</div>
+                </div>
+
+                <div class="timer-controls">
+                    <button id="timer-reset" class="control-btn outline-btn" aria-label="Reset Timer">
+                        <i class="ph ph-arrow-counter-clockwise"></i>
+                    </button>
+                    <button id="timer-toggle" class="control-btn primary-btn play-btn" aria-label="Play/Pause Timer">
+                        <i class="ph-fill ph-play" id="timer-toggle-icon"></i>
+                    </button>
+                </div>
+                <div class="timer-status" id="timer-status">Ready to focus!</div>
+            </div>
+
+            <div class="glass-card quote-card">
+                <i class="ph-fill ph-quotes tag-icon"></i>
+                <p class="quote-text">"Don't count the days, make the days count"</p>
+                <p class="quote-author">- Muhammad Ali</p>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Task Detail Sidebar -->
+    <div id="task-detail-sidebar" class="task-detail-sidebar hidden">
+        <div class="detail-sidebar-header">
+            <h3>Task Details</h3>
+            <button id="close-detail-btn" class="icon-btn glass-btn" aria-label="Close"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="detail-sidebar-body">
+            <div class="detail-group">
+                <label>Title</label>
+                <input type="text" id="detail-title" class="glass-input detail-input">
+            </div>
+            <div class="detail-group created-date-display">
+                <i class="ph ph-clock"></i>
+                <span id="detail-created-at">Created: --</span>
+            </div>
+            <div class="detail-row">
+                <div class="detail-group">
+                    <label><i class="ph ph-flag"></i> Priority</label>
+                    <select id="detail-priority" class="glass-input detail-input">
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="detail-group">
+                    <label><i class="ph ph-calendar-blank"></i> Deadline</label>
+                    <input type="date" id="detail-deadline" class="glass-input detail-input">
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-group">
+                    <label><i class="ph ph-bell"></i> Reminder</label>
+                    <input type="datetime-local" id="detail-reminder" class="glass-input detail-input">
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-group">
+                    <label><i class="ph ph-hourglass-high"></i> Duration (min)</label>
+                    <input type="number" id="detail-duration" class="glass-input detail-input" min="0">
+                </div>
+                <div class="detail-group">
+                    <label><i class="ph ph-target"></i> Target Sessions</label>
+                    <input type="number" id="detail-target-sessions" class="glass-input detail-input" min="0">
+                </div>
+            </div>
+            <div class="detail-group pomodoro-tracker">
+                <label><i class="ph ph-timer"></i> Pomodoro Progress</label>
+                <div class="session-dots" id="session-dots"></div>
+                <p class="session-count-text" id="session-count-text">0 / 0 sessions</p>
+            </div>
+            <div class="detail-group">
+                <label><i class="ph ph-text-align-left"></i> Notes</label>
+                <textarea id="detail-notes" class="glass-input detail-input detail-textarea" rows="3"
+                    placeholder="Add notes..."></textarea>
+            </div>
+            <div class="detail-group">
+                <label><i class="ph ph-list-checks"></i> Subtasks</label>
+                <ul class="subtask-list" id="subtask-list"></ul>
+                <div class="subtask-add-row">
+                    <input type="text" id="subtask-input" class="glass-input detail-input"
+                        placeholder="Add a subtask...">
+                    <button id="add-subtask-btn" class="icon-btn glass-btn" aria-label="Add subtask"><i
+                            class="ph ph-plus"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="detail-sidebar-footer">
+            <button id="save-detail-btn" class="primary-btn" style="width:100%;">Save Changes</button>
+        </div>
+    </div>
+
+    <!-- Full Focus Mode Overlay -->
+    <div id="focus-mode-overlay" class="focus-mode-overlay hidden">
+        <div class="focus-mode-bg-orb focus-orb-1"></div>
+        <div class="focus-mode-bg-orb focus-orb-2"></div>
+        <div class="focus-mode-bg-orb focus-orb-3"></div>
+
+        <button id="exit-focus-mode" class="exit-focus-btn" aria-label="Exit Focus Mode">
+            <i class="ph ph-arrow-square-out"></i> Exit Focus
+        </button>
+
+        <div class="focus-mode-layout">
+            <!-- Left: Task Details -->
+            <div class="focus-mode-left">
+                <div class="focus-task-card glass-card">
+                    <div class="focus-task-header">
+                        <span class="focus-label">Currently Focusing On</span>
+                        <span class="focus-priority-badge" id="focus-priority-badge">MEDIUM</span>
+                    </div>
+                    <h2 class="focus-task-title" id="focus-task-title">Task Name</h2>
+                    <div class="focus-meta-row">
+                        <div class="focus-meta-item" id="focus-meta-deadline">
+                            <i class="ph ph-calendar-blank"></i>
+                            <span>No deadline</span>
+                        </div>
+                        <div class="focus-meta-item" id="focus-meta-duration">
+                            <i class="ph ph-hourglass-high"></i>
+                            <span>—</span>
+                        </div>
+                        <div class="focus-meta-item" id="focus-meta-sessions">
+                            <i class="ph ph-timer"></i>
+                            <span>0/0 sessions</span>
+                        </div>
+                    </div>
+                    <div class="focus-notes-section" id="focus-notes-section">
+                        <p class="focus-notes-label"><i class="ph ph-text-align-left"></i> Notes</p>
+                        <p class="focus-notes-text" id="focus-notes-text">No notes</p>
+                    </div>
+                    <div class="focus-subtasks-section" id="focus-subtasks-section">
+                        <p class="focus-notes-label"><i class="ph ph-list-checks"></i> Subtasks</p>
+                        <ul class="focus-subtask-list" id="focus-subtask-list"></ul>
+                    </div>
+                </div>
+
+                <div class="focus-quote glass-card">
+                    <i class="ph-fill ph-quotes"></i>
+                    <p>"Don't count the days, make the days count"</p>
+                    <span>— Muhammad Ali</span>
+                </div>
+            </div>
+
+            <!-- Center: Large Timer -->
+            <div class="focus-mode-center">
+                <div class="focus-timer-ring">
+                    <svg class="focus-timer-svg" viewBox="0 0 200 200">
+                        <circle class="focus-timer-track" cx="100" cy="100" r="90"></circle>
+                        <circle class="focus-timer-progress" id="focus-timer-progress" cx="100" cy="100" r="90">
+                        </circle>
+                    </svg>
+                    <div class="focus-timer-display" id="focus-timer-display">25:00</div>
+                </div>
+                <div class="focus-timer-controls">
+                    <button id="focus-timer-reset" class="control-btn outline-btn" aria-label="Reset">
+                        <i class="ph ph-arrow-counter-clockwise"></i>
+                    </button>
+                    <button id="focus-timer-toggle" class="control-btn primary-btn play-btn focus-play-btn"
+                        aria-label="Play/Pause">
+                        <i class="ph-fill ph-play" id="focus-timer-toggle-icon"></i>
+                    </button>
+                </div>
+                <p class="focus-timer-status" id="focus-timer-status">Ready to focus!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-Break Trigger Modal -->
+    <div id="break-trigger-modal" class="modal-overlay hidden">
+        <div class="glass-card modal-card text-center">
+            <h3>Session Complete! 🎉</h3>
+            <p>Did you finish your active task?</p>
+            <h4 id="modal-task-name" class="accent-text" style="margin: 15px 0;">Task Name</h4>
+            <div class="modal-actions" style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                <button id="modal-btn-yes" class="primary-btn"><i class="ph ph-check"></i> Yes, finished!</button>
+                <button id="modal-btn-no" class="outline-btn"><i class="ph ph-x"></i> Not quite</button>
+            </div>
+            <p style="margin-top: 20px; font-size: 0.9em; color: var(--text-secondary);">Starting Short Break...</p>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+    <script src="app.js"></script>
+</body>
+
+</html>
