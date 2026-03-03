@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyD-2o5Jz0I0-aUxx_IxOeqmsgYHi9Mpxbk",
@@ -12,6 +13,7 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
 // --- State Management ---
 // Default state
@@ -175,35 +177,75 @@ function init() {
     setInterval(checkReminders, 10000);
 }
 
-// --- Local Storage ---
-function loadState() {
-    const savedState = localStorage.getItem('aetherState');
-    if (savedState) {
-        state = { ...state, ...JSON.parse(savedState) };
-        // Reset timer if it was running when closed
-        if (state.timerState.isRunning) {
-            state.timerState.isRunning = false;
+// --- Local Storage & Cloud Sync ---
+async function loadState() {
+    let loadedFromServer = false;
+
+    // First, try to load from Firestore if user is logged in
+    if (auth.currentUser) {
+        try {
+            const docRef = doc(db, "users", auth.currentUser.uid);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                state = { ...state, ...docSnap.data() };
+                loadedFromServer = true;
+            }
+        } catch (error) {
+            console.error("Error loading purely from cloud:", error);
         }
-        // Migrate old tasks and stats to new schema
-        state.stats.sessionDates = state.stats.sessionDates || [];
-        state.tasks = state.tasks.map(t => ({
-            ...t,
-            subtasks: t.subtasks || [],
-            targetSessions: t.targetSessions || 0,
-            completedSessions: t.completedSessions || 0,
-            priority: t.priority || 'medium',
-            duration: t.duration || 0,
-            // retroactively assign completedAt if missing but task is completed
-            completedAt: t.completedAt || (t.completed ? t.createdAt || new Date().toISOString() : null)
-        }));
     }
+
+    // Fallback to local storage if no server data found
+    if (!loadedFromServer) {
+        const savedState = localStorage.getItem('aetherState');
+        if (savedState) {
+            state = { ...state, ...JSON.parse(savedState) };
+        }
+    }
+
+    // Reset timer if it was running when closed
+    if (state.timerState.isRunning) {
+        state.timerState.isRunning = false;
+    }
+
+    // Migrate old tasks and stats to new schema
+    state.stats.sessionDates = state.stats.sessionDates || [];
+    state.tasks = state.tasks.map(t => ({
+        ...t,
+        subtasks: t.subtasks || [],
+        targetSessions: t.targetSessions || 0,
+        completedSessions: t.completedSessions || 0,
+        priority: t.priority || 'medium',
+        duration: t.duration || 0,
+        // retroactively assign completedAt if missing but task is completed
+        completedAt: t.completedAt || (t.completed ? t.createdAt || new Date().toISOString() : null)
+    }));
+
+    // Once everything is loaded, re-render
+    renderTasks();
+    updateProgress();
+    updateTimeBudget();
+    updateSmartListCounts();
 }
 
-function saveState() {
-    localStorage.setItem('aetherState', JSON.stringify({
+async function saveState() {
+    const stateToSave = {
         ...state,
         timerState: { ...state.timerState, isRunning: false, intervalId: null } // don't save active intervals
-    }));
+    };
+
+    // Save locally
+    localStorage.setItem('aetherState', JSON.stringify(stateToSave));
+
+    // Save to Cloud if logged in
+    if (auth.currentUser) {
+        try {
+            await setDoc(doc(db, "users", auth.currentUser.uid), stateToSave);
+        } catch (error) {
+            console.error("Error saving to cloud:", error);
+        }
+    }
 }
 
 // --- Date ---
